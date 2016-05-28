@@ -3,7 +3,7 @@ import aiohttp_jinja2
 from aiohttp_session import get_session
 from aiohttp import web
 from uuid import uuid4
-
+from urllib.parse import parse_qs
 unique_pool = set()
 
 
@@ -23,6 +23,7 @@ def set_name_handler(request):
     session = yield from get_session(request)
     data = yield from request.json()
     name = data.get('name')
+    # TODO unique names for players
     session['name'] = name
     return web.HTTPOk()
 
@@ -39,13 +40,39 @@ def start_new_game_handler(request):
 @asyncio.coroutine
 def game_handler(request):
     game_id = request.match_info['game_id']
-    if game_id in unique_pool:
-        return web.Response(
-            text="Game_id, {}".format(game_id))
-    return web.HTTPBadRequest()
+    if game_id not in unique_pool:
+        return web.HTTPBadRequest()
+
+    qs = parse_qs(request.query_string)
+    game_mode = qs.get('type')
+
+    if game_mode is not None:
+        if game_mode[0] == 'join':
+            yield from join_game(request)
+        elif game_mode[0] == 'watch':
+            yield from watch_game(request)
+    else:
+        yield from start_new_game(request)
+
+
+@asyncio.coroutine
+def join_game(request):
+    raise NotImplementedError
+
+
+@asyncio.coroutine
+def watch_game(request):
+    raise NotImplementedError
+
+
+@asyncio.coroutine
+def start_new_game(request):
+    raise NotImplementedError
 
 
 __all__ = ["base_handler",
            "set_name_handler",
            "start_new_game_handler",
            "game_handler"]
+
+# TODO email restore session
