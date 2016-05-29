@@ -1,4 +1,5 @@
 import asyncio
+
 import aiohttp_jinja2
 from aiohttp_session import get_session
 from aiohttp import web
@@ -70,9 +71,38 @@ def start_new_game(request):
     raise NotImplementedError
 
 
+@asyncio.coroutine
+def websocket_handler(request):
+    ws = web.WebSocketResponse()
+    yield from ws.prepare(request)
+    session = yield from get_session(request)
+    try:
+        while True:
+            msg_ws = yield from ws.receive()
+            if msg_ws:
+                # TODO process game and live chat data.
+                ws.send_str('response data')
+    except:
+        # Error happened
+        pass
+    finally:
+        pass
+        # Connection closed
+    return ws
+
+
+@asyncio.coroutine
+@aiohttp_jinja2.template('test.jinja2')
+def test_handler(request):
+    # test websocket connection template
+    # TODO refactor as game controller
+    pass
+
 __all__ = ["base_handler",
            "set_name_handler",
            "start_new_game_handler",
-           "game_handler"]
+           "game_handler",
+           "test_handler",
+           "websocket_handler"]
 
 # TODO email restore session

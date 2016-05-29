@@ -1,0 +1,11 @@
+Hi
+<script>
+    var ws = new WebSocket('ws://localhost:8080/ws');
+    ws.onopen = function () {
+        alert('opened')
+    };
+    ws.onmessage = function(e){
+        console.log(e)
+    }
+
+</script>
